@@ -1,19 +1,19 @@
 //
 //===================================================================
-//	                NINA - Messages - Eventhandler
-//		                -- VERSION 0.1.1  --
+//	                DWD - Messages - Eventhandler
+//		                -- VERSION 0.0.1  --
 //
-// This script iterates over the data which have been provided by the ioBroker.nina adapter.
+// This script iterates over the data which have been provided by the ioBroker.dwd adapter.
 // The prepared messages can be processed to other systems (e.g. pushover, telegram...)
 // 
 // Internals
 // ---------- 
 // The script creates a state for every ags to store the message-ids that have already been sent.
-// Example: javascript.0.nina.Eventhandler.<AGS>.msgssend
+// Example: javascript.0.dwd.Eventhandler.<AGS>.msgssend
 //
 // Prerequisites
 // ------------- 
-// Adapter - ioBroker.nina - https://github.com/TA2k/ioBroker.nina
+// Adapter - ioBroker.dwd -
 //
 //
 // Webservice
@@ -32,7 +32,7 @@
 //
 //    ::::::::::::::: www.blogging-it.com :::::::::::::::
 //    
-// Copyright (C) 2020 Markus Eschenbach. All rights reserved.
+// Copyright (C) 2020 Markus Eschenbach. All rights reserved. Canged T.Jesse
 // 
 // 
 // This software is provided on an "as-is" basis, without any express or implied warranty.
@@ -70,14 +70,14 @@ var noSendOnFirstAgsRun = false; // true = do not send infos on first run to avo
 
 var sendToPushover = false; // Pushover adapter needed
 var sendToTelegram = true; // Telegram adapter needed
-var sendToTelegramUser = 'Rababersaft, Meike, Agent'; // the Telegram user
-var TelegramInstance = '0'; // the Instance Telegram adapter
+var sendToTelegramUser = 'Rababersaft'; // the Telegram user
+var TelegramInstance = '2'; // the Instance Telegram adapter
 
-var ninaAdapter = 'nina';
-var ninaAdapterInstance = '0';
-var idConfigBase = 'javascript.' + instance  + '.' + ninaAdapter + '.Eventhandler';
+var dwdAdapter = 'dwd';
+var dwdAdapterInstance = '0';
+var idConfigBase = 'javascript.' + instance  + '.' + dwdAdapter + '.Eventhandler';
 var idConfigAgsMsgsSendTemplate = idConfigBase + '.{0}.msgssend';
-var msgTemplate = 'NINA - {0} {1}{NL}Datum: {2}{NL}Ort: {3}{NL}Typ: {4}{NL}Maßnahmen: {5}{NL}{NL}{6}{NL}{NL}{7}';
+var msgTemplate = 'DWD - {0} {1}{NL}Datum: {2}{NL}Ort: {3}{NL}Typ: {4}{NL}Ereignis: {5}{NL}{NL}{6}{NL}{NL}{7}';
 var nl = '\n';
 var defaultFormatDate = 'TT.MM.JJJJ';
 var defaultFormatDateTime = defaultFormatDate + ' SS:mm:ss';
@@ -302,18 +302,18 @@ function arrayContains(arr, value){
 }
 
 /**
- * Process the message data which have been provided by the ioBroker.nina adapter of the given AGS.
+ * Process the message data which have been provided by the ioBroker.dwd adapter of the given AGS.
  * The prepared messages will be processed to other systems (e.g. Pushover, Telegram...)
  * 
  * @params ags Process the messages for this AGS  
  */
 function processMessagesForAgs(ags) {
-  var idNinaDevice = ninaAdapter + '.' + ninaAdapterInstance + '.' + ags;
-  var idNumberOfWarn = idNinaDevice + '.numberOfWarn';
-  var idWarningBase = idNinaDevice + '.warnung';
+  var iddwdDevice = dwdAdapter + '.' + dwdAdapterInstance + '.' + ags;
+  var idNumberOfWarn = iddwdDevice + '3';
+  var idWarningBase = iddwdDevice + '.warnung';
 
   var numberOfWarnings = stVal(idNumberOfWarn);
-  var agsName = objName(idNinaDevice);
+  var agsName = objName(iddwdDevice);
 
   debug('Iterate over ' + numberOfWarnings + ' messages from ' + agsName);
 
@@ -347,12 +347,12 @@ function processMessagesForAgs(ags) {
 
     mgsSendList.push(msgId);
 
-    var idWarningInfo = idWarning + '.info01';
+    var idWarningInfo = idWarning;
     var msgHeadline = stVal(idWarningInfo + '.headline');
     var msgDescr = stVal(idWarningInfo + '.description');
-    var msgEvent = stVal(idWarningInfo + '.event');
+    var msgEvent = stVal(idWarningInfo + '.begin');
     var msgSeverity = stVal(idWarningInfo + '.severity');
-    var msgUrgency = stVal(idWarningInfo + '.urgency');
+    var msgUrgency = stVal(idWarningInfo + '.level');
 
     var msgType = stVal(idWarning + '.msgType');
     var msgSent = stVal(idWarning + '.sent');
@@ -437,14 +437,14 @@ function sendMsgTo(text) {
 }
 
 /**
- * Reads the configured AGS values of the ioBroker.nina adapter.
+ * Reads the configured AGS values of the ioBroker.dwd adapter.
  * Iterates over the list and starts further processing.
  * 
  */
 function main(){
-  var ninaData = getSysAdapterNative(ninaAdapter, ninaAdapterInstance);
-  var ninaAgsArr = ninaData.agsArray.split(',').map(item=>item.trim());
-  for (const ags of ninaAgsArr){
+  var dwdData = getSysAdapterNative(dwdAdapter, dwdAdapterInstance);
+  var dwdAgsArr = dwdData.agsArray.split(',').map(item=>item.trim());
+  for (const ags of dwdAgsArr){
     processMessagesForAgs(ags);
   }
 }
